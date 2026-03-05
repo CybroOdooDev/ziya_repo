@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="cyllo_social_media_marketing.SocialMediaFeed">
+        <div class="cyllo_container_social">
+            <div class="row">
+                <div class="col-12 cy-breadcrumbs-titlebar cyllo_title_social border-bottom">
+                    <div class="row d-flex align-items-center py-2">
+                        <div class="col cy-main-section-head d-flex align-items-center">
+                            <ul class="navbar-nav flex-row flex-wrap gap-4 left_align">
+                                <li class="nav-item">
+                                    <a class="nav-link cy-navitem-list d-flex gap-1" t-on-click="() => this.CreatePost()">
+                                        <i class="ri-add-line"/>New Post
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link cy-navitem-list d-flex gap-1" t-on-click="() => this.detailsRefreshAll()">
+                                        Synchronize
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col d-flex align-items-center justify-content-end gap-2 px-2 me-4">
+                            <span>Demo</span>
+                            <label class="toggle_feed">
+                                <input type="checkbox" id="toggleButton" class="form-check-input" t-on-change="DisplayDemo"/>
+                                <span class="slider_feed"/>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <main class="cy-main">
+                    <div class="cy-dashboard-container mb-2">
+                        <div class="d-flex cy-soical-marketing_dashboard">
+                            <div class="col-lg-3 border-top-0 cy-border-right social_glance">
+                                <div class="d-flex flex-column p-0 cy-social_glance-container">
+                                    <div class="col cy-soical_marketing-glance">
+                                        <h5 class="cy-soical_marketing-glance_heading m-0 border-bottom">
+                                            At a glance
+                                        </h5>
+                                        <div class="col py-3 cy-social-market_box cy-social_market-glancebox cy-social-market_glance_box"
+                                             t-att-class="state.currentAccount == 'LinkedIn' ? 'active' : ''"
+                                             t-on-click="() => this.showLinkedinFeed()">
+                                            <div class="w-100 d-flex justify-content-between align-items-center flex-wrap">
+                                                <div class="d-flex align-items-center gap-2 cy-social-market_tophead">
+                                                    <i class="fa fa-linkedin" style="color: #0077b5; font-size: 20px;"/>
+                                                    <t>LinkedIn</t>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2 cy-soical-market_glancecontainer">
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <i class="ri-article-line cy-icons"/>
+                                                        <p class="cy-soical-market_txt">
+                                                            <t t-esc="(state.LiPostCount or 0) + (state.demo ? 5 : 0)"/>
+                                                        </p>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <i class="ri-heart-line cy-icons"/>
+                                                        <p class="cy-soical-market_txt">
+                                                            <t t-esc="(state.LiTotalLikes or 0) + (state.demo ? 314 : 0)"/>
+                                                        </p>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <i class="ri-chat-3-line cy-icons"/>
+                                                        <p class="cy-soical-market_txt">
+                                                            <t t-esc="(state.LiTotalComments or 0) + (state.demo ? 88 : 0)"/>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cy-social_postingSection" t-ref="container">
+                                <div class="d-flex p-0 cy-social_maketing-topSection">
+                                    <div t-if="state.currentAccount == 'LinkedIn'" class="col cy-social-marketing-col position-relative">
+                                        <div class="cy-social-market_box cy-border-btm py-3 cy-social_postHead">
+                                            <div class="d-flex align-items-center gap-2 cy-social-market_tophead">
+                                                <i class="fa fa-linkedin" style="color: #0077b5; font-size: 25px;"/>
+                                                <t>LinkedIn</t>
+                                            </div>
+                                            <!-- ── Org selector dropdown ─────────────────────────────────── -->
+                                            <t t-if="state.linkedinOrgs.length > 0">
+                                                <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                                    <span class="small text-muted fw-bold">Organization:</span>
+                                                    <div class="cy-custom-dropdown" t-on-click-outside="() => this.state.showOrgDropdown = false">
+                                                        <div class="cy-dropdown-toggle" t-on-click="toggleOrgDropdown">
+                                                            <t t-set="selectedOrg" t-value="state.linkedinOrgs.find(o => o.id === state.selectedOrgId)"/>
+                                                            <span t-esc="selectedOrg ? selectedOrg.name : 'Select Organization'"/>
+                                                            <i class="ri-arrow-down-s-line ms-auto"/>
+                                                        </div>
+                                                        <div class="cy-dropdown-menu" t-if="state.showOrgDropdown">
+                                                            <t t-foreach="state.linkedinOrgs" t-as="org" t-key="org.id">
+                                                                <div class="cy-dropdown-item"
+                                                                     t-att-class="state.selectedOrgId === org.id ? 'active' : ''"
+                                                                     t-on-click="() => this.selectLinkedInOrg(org.id)">
+                                                                    <t t-esc="org.name"/>
+                                                                    <i t-if="state.selectedOrgId === org.id" class="ri-check-line ms-auto text-primary"/>
+                                                                </div>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+
+
+
+
+                                        </div>
+
+
+                                        <t t-if="state.demo and !state.loading">
+                                            <!-- Demo Posts -->
+                                            <t t-set="demoPosts" t-value="[
+                                                {'id': 'd1', 'author': 'LinkedIn Demo Page', 'date': '16 Feb 2026, 10:30', 'content': 'Welcome to our corporate LinkedIn page! This is demo data showing how your professional posts will appear. #Networking #Professionalism', 'likes': 15, 'comments': 3},
+                                                {'id': 'd2', 'author': 'Corporate Insights', 'date': '15 Feb 2026, 09:15', 'content': 'Our latest annual report is out! Check out the amazing growth we\'ve achieved this year thanks to our incredible team.', 'image': '/cyllo_social_media_marketing/static/description/social-marketing.svg', 'likes': 42, 'comments': 12},
+                                                {'id': 'd3', 'author': 'Global Expansion', 'date': '14 Feb 2026, 14:20', 'content': 'Thrilled to announce that we are opening our new headquarters in Dubai! 🌍 A huge step forward in our global mission to innovate.', 'likes': 89, 'comments': 24}
+                                            ]"/>
+
+                                            <t t-foreach="demoPosts" t-as="dp" t-key="dp.id">
+                                                <div class="cy-timeline-card">
+                                                    <div class="cy-demo-badge">Demo</div>
+                                                    <div class="cy-card-header">
+                                                        <div class="cy-author-info">
+                                                            <div class="cy-author-avatar">
+                                                                <i class="fa fa-linkedin" style="color: #0077b5; font-size: 24px; padding: 12px;"/>
+                                                            </div>
+                                                            <div class="cy-author-meta">
+                                                                <span class="cy-author-name" t-esc="dp.author"/>
+                                                                <span class="cy-post-date" t-esc="dp.date"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="cy-card-content" t-esc="dp.content"/>
+                                                    <div t-if="dp.image" class="cy-card-media">
+                                                        <img t-att-src="dp.image" alt="Post Image"/>
+                                                    </div>
+                                                    <div class="cy-card-footer">
+                                                        <div class="cy-interaction-btn" title="Likes">
+                                                            <i class="ri-heart-line"/>
+                                                            <span t-esc="dp.likes"/>
+                                                        </div>
+                                                        <div class="cy-interaction-btn" title="Comments" t-on-click="() => this.OpenLinkedInComments('demo')">
+                                                            <i class="ri-chat-3-line"/>
+                                                            <span t-esc="dp.comments"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </t>
+
+                                        <!-- Real LinkedIn Feeds -->
+                                        <t t-foreach="state.LinkedinFeeds" t-as="feed" t-key="feed.id">
+                                            <div class="cy-timeline-card">
+                                                <div class="cy-card-header">
+                                                    <div class="cy-author-info">
+                                                        <div class="cy-author-avatar">
+                                                            <img t-att-src="feed.profile_image_url or '/cyllo_social_media_marketing/static/description/social-marketing.svg'"/>
+                                                        </div>
+                                                        <div class="cy-author-meta">
+                                                            <span class="cy-author-name" t-esc="feed.author_name"/>
+                                                            <span class="cy-post-date" t-esc="formatDate(feed.posted_date)"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="cy-card-actions-top">
+                                                        <a t-if="feed.author_link_url" t-attf-href="{{feed.author_link_url}}"
+                                                           target="_blank" class="cy-action-btn-circle" title="View on LinkedIn">
+                                                            <i class="ri-external-link-line"/>
+                                                        </a>
+                                                        <a t-on-click="() => this.deleteLinkedInFeed(feed.id)"
+                                                           class="cy-action-btn-circle cy-btn-delete" title="Delete Post">
+                                                            <i class="ri-delete-bin-line"/>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                <div class="cy-card-content" t-esc="feed.description"/>
+                                                <!-- Poll Card -->
+                                                <div t-if="feed.is_poll and feed.poll_options" class="cy-poll-card mt-2">
+                                                    <div class="cy-poll-question">
+                                                        <i class="ri-bar-chart-2-line me-1 text-primary"/>
+                                                        <span t-esc="feed.poll_question"/>
+                                                    </div>
+                                                    <t t-set="pollOpts" t-value="parsePollOptions(feed.poll_options)"/>
+                                                    <t t-set="totalVotes" t-value="feed.poll_total_votes or 0"/>
+                                                    <t t-foreach="pollOpts" t-as="opt" t-key="opt_index">
+                                                        <t t-set="pct" t-value="totalVotes > 0 ? Math.round((opt.voteCount / totalVotes) * 100) : 0"/>
+                                                        <div class="cy-poll-option">
+                                                            <div class="cy-poll-option-bar" t-attf-style="width: #{pct}%;"/>
+                                                            <span class="cy-poll-option-text" t-esc="opt.text"/>
+                                                            <span class="cy-poll-option-pct" t-esc="pct + '%'"/>
+                                                        </div>
+                                                    </t>
+                                                    <div class="cy-poll-meta">
+                                                        <span t-esc="totalVotes"/> votes ·
+                                                        <span t-esc="feed.poll_duration ? feed.poll_duration.replace('_', ' ').toLowerCase() : ''"/>
+                                                    </div>
+                                                </div>
+                                                <div t-if="feed.posted_image_url" class="cy-card-media">
+                                                    <img t-att-src="feed.posted_image_url" alt="Post Image"/>
+                                                </div>
+                                                <div class="cy-card-footer">
+                                                    <div class="cy-interaction-btn" title="Likes">
+                                                        <i class="ri-heart-line"/>
+                                                        <span t-esc="feed.likes_count or 0"/>
+                                                    </div>
+                                                    <div class="cy-interaction-btn" title="Comments" t-on-click="() => this.OpenLinkedInComments(feed)">
+                                                        <i class="ri-chat-3-line"/>
+                                                        <span t-esc="feed.comments_count or 0"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <!-- Infinite Scroll Loading Indicator -->
+                                         <div t-if="(state.loading or state.syncing) and state.currentAccount == 'LinkedIn'" class="d-flex justify-content-center py-3">
+                                             <div class="spinner-border text-primary" role="status">
+                                                 <span class="visually-hidden">Loading...</span>
+                                             </div>
+                                         </div>
+
+                                         <!-- End of Dataset -->
+                                         <div t-if="!state.liHasMore and state.LinkedinFeeds.length > 0 and !state.loading" class="text-center py-4 text-muted border-top mt-2">
+                                             <p class="mb-0"><i class="ri-check-line me-1"/> You've reached the end of the LinkedIn feed.</p>
+                                         </div>
+                                        <!-- End of wrapping t-if !state.loading -->
+
+                                        <div class="cy-social-marketing-nostream" t-if="state.LinkedinFeeds.length == 0 and !state.loading">
+                                            <p class="cy-nostream_add-msg">No LinkedIn posts fetched yet.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            <!-- LinkedIn Comments Popup -->
+            <div t-if="state.showCommentsModal" class="cy-social_comment_modal show-modals" tabindex="-1" role="dialog">
+                <div class="cy-onboard_modal-container d-flex align-items-center justify-content-center">
+                    <div class="cy-onboarding_modalbox">
+                        <div class="cy-modal_content">
+                            <div class="cy-modal_content-header" style="position: relative; padding: 1.5rem 2rem; border-bottom: 1px solid #dfdfdf;">
+                                <div style="padding-right: 40px;">
+                                    <h5 style="margin-bottom: 0.25rem; display: flex; align-items: center; font-size: 20px;">
+                                        <i class="fa fa-linkedin me-2" style="color: #0077b5;"/>Comments
+                                    </h5>
+                                    <p t-if="state.commentingFeed" style="font-size: 13px; color: #717684; margin: 0;">
+                                        Post: <t t-esc="state.commentingFeed.author_name"/>
+                                    </p>
+                                </div>
+                                <a type="button" style="cursor: pointer; font-size: 24px; color: #717684; line-height: 1; position: absolute; top: 1.25rem; right: 1.25rem; z-index: 10;"
+                                   t-on-click="CloseCommentsModal" title="Close">
+                                    <i class="ri-close-line"/>
+                                </a>
+                            </div>
+
+
+                            <div class="cy-modal_main-body p-4" style="height: 50vh; overflow-y: auto;">
+                                <!-- Loading Spinner -->
+                                <div t-if="state.commentsLoading" class="p-5 text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Fetching comments...</p>
+                                </div>
+
+                                <!-- Empty State -->
+                                <div t-if="!state.commentsLoading and state.currentComments.length == 0" class="p-4 text-center text-muted">
+                                    <i class="ri-chat-3-line display-4 mb-2 d-block opacity-25"></i>
+                                    <p>No comments found for this post.</p>
+                                </div>
+
+                                <!-- LinkedIn Comments List -->
+                                <t t-if="!state.commentsLoading" t-foreach="state.currentComments" t-as="comment" t-key="comment.id">
+                                    <div class="cy-social_market-commentReply mb-4">
+                                        <div class="cy-social_marketComment-box p-0">
+                                            <div class="cy-comment-bubble">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="fw-bold" style="font-size: 13px; color: #151E4E;" t-esc="comment.author_name"></span>
+                                                        <span class="cy-soical-comment_txt" style="font-size: 11px;">
+                                                            <t t-esc="formatDate(comment.created_at)"/>
+                                                        </span>
+                                                    </div>
+                                                    <!-- Delete Comment Button -->
+                                                    <a t-on-click="() => this.deleteLinkedInComment(comment.id)"
+                                                       class="cursor-pointer text-danger opacity-50 hover-opacity-100"
+                                                       title="Delete Comment">
+                                                        <i class="ri-delete-bin-line" style="font-size: 14px;"/>
+                                                    </a>
+                                                </div>
+                                                <p class="cy-soical-market-cmnttile" style="white-space: pre-wrap;" t-esc="comment.text"></p>
+                                            </div>
+
+                                            <!-- Reply Actions & View Replies Toggle -->
+                                            <div class="d-flex justify-content-start align-items-center mt-1 gap-3">
+                                                <a t-on-click="() => this.onClickReplyLinkedIn(comment.id)"
+                                                   class="cursor-pointer d-flex align-items-center gap-1 text-muted text-decoration-none">
+                                                    <i class="ri-chat-3-line" style="font-size: 14px;"/>
+                                                    <span style="font-size: 12px; font-weight: 500;">Reply</span>
+                                                </a>
+
+                                                <!-- View Replies Toggle -->
+                                                <a t-if="comment.comments_count &gt; 0"
+                                                   t-on-click="() => this.toggleReplies(comment.id)"
+                                                   class="cursor-pointer text-primary text-decoration-none d-flex align-items-center gap-1"
+                                                   style="font-size: 12px; font-weight: 600;">
+                                                    <t t-if="!state.showReplies[comment.id]">
+                                                        <i class="ri-arrow-down-s-line"/> View <t t-esc="comment.comments_count"/> replies
+                                                    </t>
+                                                    <t t-else="">
+                                                        <i class="ri-arrow-up-s-line"/> Hide replies
+                                                    </t>
+                                                </a>
+                                            </div>
+
+                                            <!-- Nested Replies Container -->
+                                            <div t-if="state.showReplies[comment.id]" class="mt-2 ps-3 border-start border-2">
+                                                <div t-if="state.repliesLoading[comment.id]" class="text-muted small py-1">
+                                                    <i class="ri-loader-4-line fa-spin"/> Loading replies...
+                                                </div>
+                                                <t t-foreach="state.replies[comment.id] || []" t-as="reply" t-key="reply.id">
+                                                    <div class="mb-2">
+                                                        <div class="cy-comment-bubble bg-light border-0 p-2 rounded-3">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <span class="fw-bold" style="font-size: 12px; color: #151E4E;" t-esc="reply.author_name"></span>
+                                                                    <span class="text-muted" style="font-size: 10px;">
+                                                                        <t t-esc="formatDate(reply.created_at)"/>
+                                                                    </span>
+                                                                </div>
+                                                                <!-- Delete Reply Button -->
+                                                                <a t-on-click="() => this.deleteLinkedInComment(reply.id)"
+                                                                   class="cursor-pointer text-danger opacity-50 hover-opacity-100"
+                                                                   title="Delete Reply">
+                                                                    <i class="ri-delete-bin-line" style="font-size: 12px;"/>
+                                                                </a>
+                                                            </div>
+                                                            <p class="mb-0 small" style="white-space: pre-wrap; font-size: 13px;" t-esc="reply.text"></p>
+                                                        </div>
+                                                    </div>
+                                                </t>
+
+                                                <!-- No replies found message (if count > 0 but API returns none/empty) -->
+                                                <div t-if="!state.repliesLoading[comment.id] &amp;&amp; (!state.replies[comment.id] || state.replies[comment.id].length == 0)" class="text-muted small fst-italic">
+                                                    No replies found.
+                                                </div>
+                                            </div>
+
+                                            <!-- Nested Reply Input -->
+                                            <div t-attf-id="reply_div_{{comment.id}}" class="reply_div d-none mt-2" style="width: 100%;">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <!-- Emoji Button for Reply -->
+                                                    <button class="btn p-0"
+                                                            type="button"
+                                                            title="Add emoji"
+                                                            t-on-mouseenter="(ev) => this.addReplyEmojiPicker(ev, comment.id)"
+                                                            t-on-click="(ev) => this.addReplyEmojiPicker(ev, comment.id)"
+                                                            style="font-size: 18px; color: #717684;">
+                                                        <i class="ri-emotion-line"/>
+                                                    </button>
+
+
+                                                    <input class="form-control"
+                                                           type="text"
+                                                           placeholder="Write a reply..."
+                                                           t-attf-id="reply_input_{{comment.id}}"
+                                                           t-on-input="(ev) => this.onLiReplyInput(ev, comment.id)"
+                                                           autocomplete="off"/>
+                                                    <span class="send_button"
+                                                          t-on-click="() => this.postLinkedInReply(comment)"
+                                                          t-att-disabled="!state.liReplyTexts[comment.id]"
+                                                          t-attf-style="color: {{state.liReplyTexts[comment.id] ? 'var(--primary)' : '#adb5bd'}};">
+                                                        <i class="ri-send-plane-2-line"/>
+                                                    </span>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="px-4 py-3 border-top bg-light">
+
+                                <div class="cyllo_comment_template bg-white rounded-pill shadow-sm border px-3 py-2 d-flex align-items-center">
+                                    <!-- Emoji Picker Button -->
+                                    <button class="btn p-0 me-2"
+                                            type="button"
+                                            title="Add emoji"
+                                            t-ref="liEmojiButton"
+                                            t-on-click="onCommentEmojiClick"
+                                            style="font-size: 20px; color: #717684;">
+                                        <i class="ri-emotion-line"/>
+                                    </button>
+
+                                    <textarea
+                                        class="form-control"
+                                        id="li_comment_area"
+                                        rows="1"
+                                        placeholder="Write a comment...."
+                                        t-on-input="onLiCommentInput"
+                                        style="border: none; background: transparent; box-shadow: none; resize: none;"></textarea>
+                                    <button class="btn p-0 ms-2"
+                                            t-att-disabled="!state.liCommentText"
+                                            t-attf-style="font-size: 22px; color: {{state.liCommentText ? 'var(--primary)' : '#adb5bd'}};"
+                                            t-on-click="onClickPostLinkedIn">
+                                        <i class="ri-send-plane-2-line"/>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="cy-modal_footer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
