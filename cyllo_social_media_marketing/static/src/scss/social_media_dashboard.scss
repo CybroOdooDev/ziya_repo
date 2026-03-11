@@ -8,8 +8,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    flex: 3;
-    /* Takes up more space on the left */
+    flex: 3; /* Takes up more space on the left */
 }
 
 .o_social_media_posts {
@@ -117,10 +116,9 @@
 .o_account_card .o_account_details {
     text-align: left;
 
-    i,
-    span {
-        font-size: 20px;
-    }
+  i, span {
+    font-size: 20px;
+  }
 }
 
 .o_account_card h4 {
@@ -166,15 +164,13 @@
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-@media (max-width:992px) {
+@media (max-width:992px){
     .o_account_card {
-        max-width: 50%;
-    }
-}
-
+        max-width:50%;
+    }}
 .o_post_item {
     background: #fff;
     border: 1px solid #ddd;
@@ -211,25 +207,17 @@
 
 .notification-icon {
     font-size: 20px;
-    margin-left: auto;
-    /* Align icon to the right */
+    margin-left: auto; /* Align icon to the right */
 }
 
 .custom-modal-input {
-    border-radius: 7px;
-    /* Rounded corners */
-    border: 1px solid #d3d3d3;
-    /* Light gray border */
-    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
-    /* Subtle shadow */
-    padding: 10px;
-    /* Inner padding */
-    width: 100%;
-    /* Full width */
-    box-sizing: border-box;
-    /* Ensures padding doesn't affect width */
-    font-size: 14px;
-    /* Font size */
+    border-radius: 7px; /* Rounded corners */
+    border: 1px solid #d3d3d3; /* Light gray border */
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 10px; /* Inner padding */
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+    font-size: 14px; /* Font size */
     margin-bottom: 8px;
 }
 

@@ -37,7 +37,7 @@
                                         <h5 class="cy-soical_marketing-glance_heading m-0 border-bottom">
                                             At a glance
                                         </h5>
-                                        <div class="col py-3 cy-social-market_box cy-social_market-glancebox cy-social-market_glance_box"
+                                        <div t-if="state.isLinkedinInstalled" class="col py-3 cy-social-market_box cy-social_market-glancebox cy-social-market_glance_box"
                                              t-att-class="state.currentAccount == 'LinkedIn' ? 'active' : ''"
                                              t-on-click="() => this.showLinkedinFeed()">
                                             <div class="w-100 d-flex justify-content-between align-items-center flex-wrap">
@@ -194,7 +194,31 @@
                                                         <span t-esc="feed.poll_duration ? feed.poll_duration.replace('_', ' ').toLowerCase() : ''"/>
                                                     </div>
                                                 </div>
-                                                <div t-if="feed.posted_image_url" class="cy-card-media">
+                                                <!-- ── Video Post ── -->
+                                                <div t-if="feed.video_url" class="cy-card-media cy-card-video">
+                                                    <video controls="controls" preload="metadata"
+                                                           t-att-poster="feed.video_thumbnail_url or ''"
+                                                           style="width:100%;max-height:420px;border-radius:8px;background:#000;">
+                                                        <t t-set="_vurl" t-value="feed.video_url"/>
+                                                        <source t-att-src="_vurl" type="video/mp4"/>
+                                                        <!-- fallback: poster thumbnail as clickable link -->
+                                                        <img t-if="feed.video_thumbnail_url"
+                                                             t-att-src="feed.video_thumbnail_url"
+                                                             alt="Video thumbnail" style="width:100%;"/>
+                                                    </video>
+                                                </div>
+                                                <!-- ── Carousel ── -->
+                                                <div t-elif="feed.carousel_images_json" class="cy-card-media cy-carousel">
+                                                    <t t-set="carouselImgs" t-value="parseCarouselImages(feed.carousel_images_json)"/>
+                                                    <div class="cy-carousel-strip" style="display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;">
+                                                        <t t-foreach="carouselImgs" t-as="cimg" t-key="cimg_index">
+                                                            <img t-att-src="cimg" alt="Carousel image"
+                                                                 style="flex:0 0 auto;max-width:260px;max-height:300px;object-fit:cover;border-radius:6px;scroll-snap-align:start;"/>
+                                                        </t>
+                                                    </div>
+                                                </div>
+                                                <!-- ── Single Image ── -->
+                                                <div t-elif="feed.posted_image_url" class="cy-card-media">
                                                     <img t-att-src="feed.posted_image_url" alt="Post Image"/>
                                                 </div>
                                                 <div class="cy-card-footer">

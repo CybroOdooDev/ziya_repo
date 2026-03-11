@@ -15,7 +15,7 @@ export class SocialMediaFeed extends Component {
         this.containerRef = useRef("container");
         this.state = useState({
             Feeds: false,
-            fields: ['id', 'description', 'author_name', 'author_link', 'posted_date', 'author_link_url', 'posted_image', 'profile_image_url', 'posted_image_url', 'profile_image', 'likes_count', 'comments_count', 'post_id', 'linkedin_account_id', 'linkedin_org_id', 'linkedin_post_urn'],
+            fields: ['id', 'description', 'author_name', 'author_link', 'posted_date', 'author_link_url', 'posted_image', 'profile_image_url', 'posted_image_url', 'profile_image', 'likes_count', 'comments_count', 'post_id', 'linkedin_account_id', 'linkedin_org_id', 'linkedin_post_urn', 'carousel_images_json', 'video_url', 'video_thumbnail_url', 'is_poll', 'poll_question', 'poll_options', 'poll_duration', 'poll_total_votes'],
             demo: false,
             posts: [],
             nextPage: null,
@@ -40,6 +40,7 @@ export class SocialMediaFeed extends Component {
             liBatchSize: 15,
             AllLinkedinFeedsForTotals: [], // Stores matching feeds for totals calculation
             LiPostCount: 0,
+            isLinkedinInstalled: false,
         });
 
         this.emojiPicker = useEmojiPicker(useRef("liEmojiButton"), {
@@ -52,8 +53,11 @@ export class SocialMediaFeed extends Component {
             this.state.LinkedinFeeds = this.state.Feeds.filter(r => r.linkedin_account_id !== false)
             this.detailsRefresh(this)
 
-            await this._loadLinkedInOrgs();
-            await this.fetchLinkedInFeeds(true);
+            this.state.isLinkedinInstalled = await this.orm.call("social.media.feed", "get_model", ["", "linkedin.account"], {});
+            if (this.state.isLinkedinInstalled) {
+                await this._loadLinkedInOrgs();
+                await this.fetchLinkedInFeeds(true);
+            }
         });
         onMounted(() => {
             if (this.containerRef.el) {
@@ -433,6 +437,26 @@ export class SocialMediaFeed extends Component {
             return date.toFormat("dd MMM yyyy, HH:mm");
         } catch (e) {
             return dateStr;
+        }
+    }
+
+    parseCarouselImages(jsonStr) {
+        if (!jsonStr) return [];
+        try {
+            const imgs = JSON.parse(jsonStr);
+            return Array.isArray(imgs) ? imgs : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    parsePollOptions(jsonStr) {
+        if (!jsonStr) return [];
+        try {
+            const opts = JSON.parse(jsonStr);
+            return Array.isArray(opts) ? opts : [];
+        } catch (e) {
+            return [];
         }
     }
 
