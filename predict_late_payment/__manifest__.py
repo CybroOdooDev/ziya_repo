@@ -20,12 +20,11 @@
 #
 #############################################################################
 {
-    'name': 'Predict Late Payments (Gemini AI)',
-    'version': '19.0.5.0.0',
+    'name': 'Predict Late Payments',
+    'version': '19.0.1.0.0',
+    'category': 'Accounting/Accounting',
     'summary': 'Late payment prediction powered by Google Gemini AI',
     'description': """
-        Predict Late Payments
-        =====================
         Analyzes customer invoice and payment history to forecast the likelihood
         of delayed payments. Features include:
         - AI-powered payment risk score per customer
@@ -47,7 +46,7 @@
     'data': [
         'security/ir.model.access.csv',
         'security/predict_late_payment_security.xml',
-        'data/cron_data.xml',
+        'data/ir_cron_data.xml',
         'data/mail_template_data.xml',
         'views/res_config_settings_views.xml',
         'views/res_partner_views.xml',
@@ -64,6 +63,7 @@
             'predict_late_payment/static/src/js/dashboard.js',
         ],
     },
+    'images': ['static/description/banner.jpg'],
     'installable': True,
-    'application': True,
+    'application': False,
 }

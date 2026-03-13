@@ -1,4 +1,24 @@
-# -*- coding: utf-8 -*-
+# -- coding: utf-8 --
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Ziya Zakhiyah (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import math
 import logging
 from datetime import date, timedelta
@@ -35,18 +55,18 @@ class PaymentRiskScore(models.Model):
 
     partner_id = fields.Many2one(
         'res.partner', string='Customer', required=True,
-        ondelete='cascade', index=True)
+        ondelete='cascade', index=True, help='Customer for whom the payment risk score is calculated.')
     company_id = fields.Many2one(
         'res.company', string='Company',
-        default=lambda self: self.env.company)
+        default=lambda self: self.env.company, help='Company for which the payment risk score is generated.')
     currency_id = fields.Many2one(
-        'res.currency', related='company_id.currency_id', store=True)
+        'res.currency', related='company_id.currency_id', store=True, help='Currency used for all monetary values in this risk analysis.')
     # Overall score
     score = fields.Float(
         string='Risk Score', digits=(5, 2),
         help='0-100. Higher score = higher late payment risk. Set by Google Gemini AI.')
     risk_level = fields.Selection(
-        RISK_LEVELS, string='Risk Level', compute='_compute_risk_level', store=True)
+        RISK_LEVELS, string='Risk Level', compute='_compute_risk_level', store=True, help='Categorized risk level derived from the overall payment risk score.')
     risk_color = fields.Char(
         string='Risk Color', compute='_compute_risk_level', store=True)
     # AI output fields
@@ -68,31 +88,31 @@ class PaymentRiskScore(models.Model):
         string='AI-Drafted Follow-up Email', readonly=True,
         help='Ready-to-send email body drafted by Google Gemini.')
     # Sub-scores (returned by AI)
-    delay_score      = fields.Float(string='Delay Score (max 30)',       digits=(5, 2))
-    overdue_score    = fields.Float(string='Overdue Score (max 25)',      digits=(5, 2))
-    consistency_score= fields.Float(string='Consistency Score (max 15)', digits=(5, 2))
-    recency_score    = fields.Float(string='Recency Score (max 15)',      digits=(5, 2))
-    volume_score     = fields.Float(string='Volume Score (max 10)',       digits=(5, 2))
-    trend_score      = fields.Float(string='Trend Score (+-5)',           digits=(5, 2))
+    delay_score      = fields.Float(string='Delay Score (max 30)',       digits=(5, 2), help='Score contribution based on average delay in customer payments.')
+    overdue_score    = fields.Float(string='Overdue Score (max 25)',      digits=(5, 2), help='Score contribution based on the amount and frequency of overdue invoices.')
+    consistency_score= fields.Float(string='Consistency Score (max 15)', digits=(5, 2), help='Score reflecting the consistency of the customer’s payment behavior.')
+    recency_score    = fields.Float(string='Recency Score (max 15)',      digits=(5, 2), help='Score based on how recent the customer’s payment activity is.')
+    volume_score     = fields.Float(string='Volume Score (max 10)',       digits=(5, 2), help='Score contribution based on the volume of invoices and payments.')
+    trend_score      = fields.Float(string='Trend Score (+-5)',           digits=(5, 2), help='Score adjustment based on improving or worsening payment trends.')
     # Raw statistics
-    total_invoices       = fields.Integer(string='Total Invoices Analysed')
-    paid_on_time         = fields.Integer(string='Paid On Time')
-    paid_late            = fields.Integer(string='Paid Late')
-    avg_delay_days       = fields.Float(string='Avg Payment Delay (days)', digits=(6, 1))
-    max_delay_days       = fields.Float(string='Max Delay (days)',          digits=(6, 1))
-    overdue_ratio        = fields.Float(string='Overdue Ratio (%)',         digits=(5, 2))
-    currently_overdue    = fields.Integer(string='Currently Overdue Invoices')
+    total_invoices       = fields.Integer(string='Total Invoices Analysed', help='Total number of invoices used to calculate the payment risk score.')
+    paid_on_time         = fields.Integer(string='Paid On Time', help='Number of invoices paid on or before the due date.')
+    paid_late            = fields.Integer(string='Paid Late', help='Number of invoices paid after the due date.')
+    avg_delay_days       = fields.Float(string='Avg Payment Delay (days)', digits=(6, 1), help='Average number of days payments are delayed beyond the due date.')
+    max_delay_days       = fields.Float(string='Max Delay (days)',          digits=(6, 1), help='Maximum number of days a payment was delayed.')
+    overdue_ratio        = fields.Float(string='Overdue Ratio (%)',         digits=(5, 2), help='Percentage of invoices that were paid late.')
+    currently_overdue    = fields.Integer(string='Currently Overdue Invoices', help='Number of invoices that are currently overdue.')
     total_overdue_amount = fields.Monetary(
-        string='Total Overdue Amount', currency_field='currency_id')
+        string='Total Overdue Amount', currency_field='currency_id', help='Total outstanding amount from invoices that are currently overdue.')
     suggested_credit_limit = fields.Monetary(
-        string='AI Suggested Credit Limit', currency_field='currency_id')
-    last_payment_date    = fields.Date(string='Last Payment Date')
+        string='AI Suggested Credit Limit', currency_field='currency_id', help='Recommended credit limit for the customer based on payment behavior.')
+    last_payment_date    = fields.Date(string='Last Payment Date', help='Date of the most recent payment received from this customer.')
     days_since_last_payment = fields.Integer(
         string='Days Since Last Payment',
-        compute='_compute_days_since_payment', store=True)
+        compute='_compute_days_since_payment', store=True, help='Number of days since the customer’s last recorded payment.')
     # Metadata
-    last_computed = fields.Datetime(string='Last Computed', readonly=True)
-    notes = fields.Text(string='Internal Notes')
+    last_computed = fields.Datetime(string='Last Computed', readonly=True, help='Date and time when the payment risk score was last calculated.')
+    notes = fields.Text(string='Internal Notes', help='Additional internal comments or observations regarding this customer’s payment behavior.')
     _sql_constraints = [
         ('unique_partner_company', 'UNIQUE(partner_id, company_id)',
          'A risk score already exists for this customer in this company.'),
@@ -100,6 +120,10 @@ class PaymentRiskScore(models.Model):
 
     @api.depends('score')
     def _compute_risk_level(self):
+        """
+        Compute the qualitative risk level and display color based on the
+        calculated payment risk score.
+        """
         for rec in self:
             s = rec.score or 0
             if s < 25:   rec.risk_level = 'low'
@@ -109,6 +133,10 @@ class PaymentRiskScore(models.Model):
             rec.risk_color = RISK_COLORS.get(rec.risk_level, '#6c757d')
 
     def _compute_is_gemini_configured(self):
+        """
+        Determine whether the Google Gemini API key is configured in system
+        parameters for AI-based scoring.
+        """
         api_key = (
             self.env['ir.config_parameter'].sudo()
             .get_param('predict_late_payment.gemini_api_key', default=''))
@@ -117,15 +145,22 @@ class PaymentRiskScore(models.Model):
 
     @api.depends('last_payment_date')
     def _compute_days_since_payment(self):
+        """
+        Compute the number of days since the customer's last recorded payment.
+        """
         today = date.today()
         for rec in self:
             rec.days_since_last_payment = (
                 (today - rec.last_payment_date).days if rec.last_payment_date else 0)
 
-    # -------------------------------------------------------------------------
-    # Data collection (no AI)
-    # -------------------------------------------------------------------------
     def _collect_invoice_stats(self, partner):
+        """
+        Collect invoice and payment statistics for the given partner.
+
+        This method gathers historical invoice data such as payment delays,
+        overdue invoices, payment trends, and invoice volumes which are used
+        as input for the AI risk scoring engine.
+        """
         today = date.today()
         company = self.env.company
         invoices = self.env['account.move'].search([
@@ -164,7 +199,6 @@ class PaymentRiskScore(models.Model):
         overdue_ratio = (len(overdue_invs) / len(invoices) * 100) if invoices else 0
         cutoff_6m  = today - timedelta(days=180)
         cutoff_12m = today - timedelta(days=360)
-
         recent_delays = []
         old_delays = []
         for inv, d in zip(
@@ -215,6 +249,12 @@ class PaymentRiskScore(models.Model):
         }
 
     def _compute_score_for_partner(self, partner):
+        """
+        Compute the payment risk score for a specific partner.
+
+        Collects invoice statistics and sends them to the AI service
+        to generate the final risk score and recommendations.
+        """
         stats = self._collect_invoice_stats(partner)
         if stats is None:
             return self._no_history_values(partner)
@@ -249,6 +289,9 @@ class PaymentRiskScore(models.Model):
         }
 
     def _no_history_values(self, partner):
+        """
+        Return default scoring values for partners without invoice history.
+        """
         return {
             'partner_id':             partner.id,
             'company_id':             self.env.company.id,
@@ -268,11 +311,11 @@ class PaymentRiskScore(models.Model):
             'last_computed':          fields.Datetime.now(),
         }
 
-    # -------------------------------------------------------------------------
-    # Public API
-    # -------------------------------------------------------------------------
     @api.model
     def compute_for_partner(self, partner_id):
+        """
+        Compute or update the payment risk score record for a given partner.
+        """
         partner = self.env['res.partner'].browse(partner_id)
         values  = self._compute_score_for_partner(partner)
         existing = self.search([
@@ -325,6 +368,10 @@ class PaymentRiskScore(models.Model):
         }
 
     def action_compute_score(self):
+        """
+        Manually trigger recalculation of the payment risk score for
+        the selected partner.
+        """
         for rec in self:
             self.compute_for_partner(rec.partner_id.id)
         # Check the last record in the loop for configuration status feedback
@@ -351,6 +398,10 @@ class PaymentRiskScore(models.Model):
             }
 
     def action_send_followup(self):
+        """
+        Open the follow-up wizard with AI-generated communication
+        for the selected partner.
+        """
         self.ensure_one()
         message = self.followup_email or self.followup_suggestion or ''
         return {

@@ -1,26 +1,57 @@
-# -*- coding: utf-8 -*-
+# -- coding: utf-8 --
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Ziya Zakhiyah (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 from odoo import api, fields, models, _
 
 
 class AccountMove(models.Model):
+    """
+    Extend account.move to display customer payment risk information
+    directly on invoices.
+    """
     _inherit = 'account.move'
 
-    # ── Risk badge shown directly on the invoice ──────────────────────────────
     invoice_payment_risk_score = fields.Float(
         string='Customer Risk Score',
-        compute='_compute_invoice_risk', store=False, digits=(5, 2))
+        compute='_compute_invoice_risk', store=False, digits=(5, 2),
+        help='AI-calculated payment risk score of the customer based on their payment history.')
     invoice_payment_risk_level = fields.Selection(
         [('low', 'Low Risk'), ('medium', 'Medium Risk'),
          ('high', 'High Risk'), ('critical', 'Critical Risk')],
         string='Customer Risk Level',
-        compute='_compute_invoice_risk', store=False)
+        compute='_compute_invoice_risk', store=False,
+        help='Risk category of the customer determined from the payment risk score.')
     invoice_payment_risk_color = fields.Char(
-        string='Risk Color', compute='_compute_invoice_risk', store=False)
+        string='Risk Color', compute='_compute_invoice_risk', store=False,
+        help='Color code used to visually represent the customer’s payment risk level.')
     invoice_days_overdue = fields.Integer(
-        string='Days Overdue', compute='_compute_invoice_risk', store=False)
+        string='Days Overdue', compute='_compute_invoice_risk', store=False,
+        help='Number of days the invoice payment is overdue based on the due date.')
 
     @api.depends('partner_id', 'invoice_date_due', 'payment_state')
     def _compute_invoice_risk(self):
+        """
+        Compute the payment risk score, level, color, and overdue days
+        for invoices based on the partner's risk scoring record.
+        """
         today = fields.Date.today()
         for move in self:
             partner = move.partner_id
@@ -68,7 +99,8 @@ class AccountMove(models.Model):
         """Button on the invoice to refresh the partner's risk score."""
         for move in self:
             if move.partner_id:
-                self.env['payment.risk.score'].compute_for_partner(move.partner_id.id)
+                self.env['payment.risk.score'].compute_for_partner(
+                    move.partner_id.id)
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',

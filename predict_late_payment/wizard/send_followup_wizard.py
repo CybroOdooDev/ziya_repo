@@ -1,4 +1,24 @@
-# -*- coding: utf-8 -*-
+# -- coding: utf-8 --
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Ziya Zakhiyah (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 from odoo import api, fields, models, _
 
 
@@ -25,6 +45,9 @@ class SendFollowupWizard(models.TransientModel):
 
     @api.depends('partner_id')
     def _compute_overdue_invoices(self):
+        """
+        Compute the overdue invoices for the selected partner.
+        """
         today = fields.Date.today()
         for rec in self:
             if rec.partner_id:
@@ -40,10 +63,16 @@ class SendFollowupWizard(models.TransientModel):
 
     @api.onchange('risk_score_id')
     def _onchange_risk_score(self):
+        """
+        Update the message field based on the selected risk score suggestion.
+        """
         if self.risk_score_id and self.risk_score_id.followup_suggestion:
             self.message = '<p>%s</p>' % self.risk_score_id.followup_suggestion.replace('\n', '<br/>')
 
     def action_send(self):
+        """
+        Send the follow-up email to the partner and log the message in the partner chatter.
+        """
         self.ensure_one()
         partner = self.partner_id
         if self.send_email and partner.email:
@@ -71,5 +100,6 @@ class SendFollowupWizard(models.TransientModel):
                 'message': _('Follow-up communication sent to %s.') % partner.name,
                 'sticky': False,
                 'type': 'success',
+                'next': {'type': 'ir.actions.act_window_close'},
             },
         }

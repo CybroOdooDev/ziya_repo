@@ -1,4 +1,24 @@
-# -*- coding: utf-8 -*-
+# -- coding: utf-8 --
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Ziya Zakhiyah (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
 import json
 import logging
 import urllib.request
@@ -132,9 +152,6 @@ class PaymentRiskAIService(models.AbstractModel):
             )
             return fb
 
-    # -------------------------------------------------------------------------
-    # Gemini API call
-    # -------------------------------------------------------------------------
     def _call_gemini(self, api_key: str, model: str, prompt: str) -> str:
         """
         POST to Gemini's OpenAI-compatible chat completions endpoint.
@@ -165,6 +182,13 @@ class PaymentRiskAIService(models.AbstractModel):
         return body["choices"][0]["message"]["content"]
 
     def _build_prompt(self, partner, stats: dict) -> str:
+        """
+        Build the structured prompt sent to the Gemini model.
+
+        This method converts the customer's payment statistics and invoice
+        history into a formatted text prompt that the AI model can analyse
+        to generate a risk assessment.
+        """
         currency = self.env.company.currency_id.name or 'USD'
         industry = getattr(partner, 'industry_id', None)
 
@@ -219,6 +243,11 @@ Return ONLY the JSON object. No explanation. No markdown.
 Set suggested_credit_limit in {currency}."""
 
     def _parse_response(self, raw: str) -> dict:
+        """
+        Parse and normalize the JSON response returned by Gemini.
+        Ensures the score and suggested credit limit fall within valid ranges
+        and derives the risk level from the final score.
+        """
         data = json.loads(raw.strip())
         data['score'] = max(0.0, min(100.0, float(data.get('score', 50))))
         data['suggested_credit_limit'] = max(0.0, float(data.get('suggested_credit_limit', 0)))
@@ -230,6 +259,10 @@ Set suggested_credit_limit in {currency}."""
         return data
 
     def _get_param(self, key: str, default: str = '') -> str:
+        """
+        Retrieve a configuration parameter from Odoo system settings.
+        Returns the provided default value if the parameter is not defined.
+        """
         return (
             self.env['ir.config_parameter'].sudo()
             .get_param(key, default=default) or default
@@ -237,6 +270,11 @@ Set suggested_credit_limit in {currency}."""
 
     @api.model
     def test_connection(self) -> str:
+        """
+        Test connectivity with the Gemini API.
+        Sends a simple request to verify that the configured API key and
+        model are working correctly.
+        """
         api_key = self._get_param('predict_late_payment.gemini_api_key')
         if not api_key:
             return "No API key configured. Get a free key at https://aistudio.google.com/apikey"
@@ -253,10 +291,14 @@ Set suggested_credit_limit in {currency}."""
         except Exception as e:
             return f"{type(e).__name__}: {e}"
 
-    # -------------------------------------------------------------------------
-    # Statistical fallback
-    # -------------------------------------------------------------------------
     def _fallback_score(self, stats: dict) -> dict:
+        """
+        Compute a statistical risk score when the AI service is unavailable.
+
+        Uses payment delay metrics, overdue ratios, payment consistency,
+        recent behaviour, and trend analysis to estimate the customer's
+        payment risk level.
+        """
         avg_delay    = stats.get('avg_delay_days', 0)
         overdue_ratio= stats.get('overdue_ratio',  0)
         std_dev      = stats.get('std_dev_delays',  0)
