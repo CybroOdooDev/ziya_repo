@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Ziya Zakhiyah (odoo@cybrosys.com)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
@@ -66,7 +66,9 @@ class PaymentRiskScore(models.Model):
         string='Risk Score', digits=(5, 2),
         help='0-100. Higher score = higher late payment risk. Set by Google Gemini AI.')
     risk_level = fields.Selection(
-        RISK_LEVELS, string='Risk Level', compute='_compute_risk_level', store=True, help='Categorized risk level derived from the overall payment risk score.')
+        RISK_LEVELS, string='Risk Level', compute='_compute_risk_level', store=True,
+        group_expand='_expand_risk_level',
+        help='Categorized risk level derived from the overall payment risk score.')
     risk_color = fields.Char(
         string='Risk Color', compute='_compute_risk_level', store=True)
     # AI output fields
@@ -131,6 +133,10 @@ class PaymentRiskScore(models.Model):
             elif s < 75: rec.risk_level = 'high'
             else:        rec.risk_level = 'critical'
             rec.risk_color = RISK_COLORS.get(rec.risk_level, '#6c757d')
+
+    @api.model
+    def _expand_risk_level(self, *args, **kwargs):
+        return [key for key, val in RISK_LEVELS]
 
     def _compute_is_gemini_configured(self):
         """
